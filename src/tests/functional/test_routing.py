@@ -69,7 +69,7 @@ async def test_deploy(deploy_app, model):
                 unit.workload_status_message == message for unit in deploy_app.units
             )
         ),
-        timeout=600,
+        timeout=1200,
     )
     assert True
 

@@ -1,7 +1,9 @@
 flake8
-# to run func tests on controllers < 3.0
 juju
 mock
 pytest
-pytest-asyncio
+# Breaking change after 0.23, asyncio_event_loop was been removed.
+# Instead of spending time to fix functional test for version after 0.23,
+# We should spend time to follow up with pytest-operator or zaza.
+pytest-asyncio<0.23
 requests
