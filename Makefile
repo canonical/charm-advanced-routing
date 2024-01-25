@@ -50,6 +50,7 @@ submodules-update:
 	@git submodule update --init --recursive --remote --merge
 
 build:
+	sudo apt -y install unzip
 	@echo "Building charm to directory ${CHARM_BUILD_DIR}/${CHARM_NAME}"
 	@-git rev-parse --abbrev-ref HEAD > ./src/repo-info
 	@charmcraft -v pack ${BUILD_ARGS}
