@@ -1,4 +1,5 @@
 """Reactive charm hooks."""
+
 import sys
 
 from advanced_routing_helper import AdvancedRoutingHelper, PolicyRoutingExists

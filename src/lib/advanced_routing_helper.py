@@ -1,4 +1,5 @@
 """Routing module."""
+
 import errno
 import os
 import pathlib
