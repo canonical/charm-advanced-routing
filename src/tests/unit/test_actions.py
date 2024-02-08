@@ -1,4 +1,5 @@
 """Test suite for actions."""
+
 import pathlib
 from unittest import mock
 

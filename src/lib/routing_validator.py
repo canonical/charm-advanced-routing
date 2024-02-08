@@ -2,6 +2,7 @@
 
 Validates the entire json configuration constructing a model.
 """
+
 import ipaddress
 import json
 import pprint
