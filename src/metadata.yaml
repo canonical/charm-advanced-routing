@@ -6,7 +6,6 @@ description: |
   This charm can be deployed alongside principal charms to enable custom
   network routes management.
 subordinate: true
-series: []
 tags:
     - misc
 requires:
