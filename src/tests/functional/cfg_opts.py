@@ -14,7 +14,7 @@ JSON_CONFIGS = [
                 "gateway": "10.191.86.2",
                 "table": "SF1",
                 "metric": 101,
-                "device": "ens3",
+                "device": "eth0",
             },
             {"type": "route", "net": "6.6.6.0/24", "gateway": "10.191.86.2"},
             {
@@ -30,7 +30,7 @@ JSON_CONFIGS = [
             "# This file is managed by Juju.\n"
             "ip route flush cache\n"
             "# Table: name SF1\n"
-            "ip route replace default via 10.191.86.2 table SF1 dev ens3 metric 101\n"
+            "ip route replace default via 10.191.86.2 table SF1 dev eth0 metric 101\n"
             "ip route replace 6.6.6.0/24 via 10.191.86.2\n"
             "ip rule add from 192.170.2.0/24 to 192.170.2.0/24 table SF1 priority 101\n"
         ),
@@ -39,7 +39,7 @@ JSON_CONFIGS = [
             "# This file is managed by Juju.\n"
             "ip rule del from 192.170.2.0/24 to 192.170.2.0/24 table SF1 priority 101\n"
             "ip route del 6.6.6.0/24 via 10.191.86.2\n"
-            "ip route del default via 10.191.86.2 table SF1 dev ens3 metric 101\n"
+            "ip route del default via 10.191.86.2 table SF1 dev eth0 metric 101\n"
             "ip route flush table SF1\n"
             "ip rule del table SF1\n"
             "ip route flush cache\n"
@@ -93,7 +93,7 @@ JSON_CONFIGS = [
             {
                 "type": "route",
                 "net": "1.1.2.0/24",
-                "device": "ens3",
+                "device": "eth0",
                 "table": "mytable",
             },
             {
@@ -115,7 +115,7 @@ JSON_CONFIGS = [
             "# This file is managed by Juju.\n"
             "ip route flush cache\n"
             "# Table: name mytable\n"
-            "ip route replace 1.1.2.0/24 dev ens3 table mytable\n"
+            "ip route replace 1.1.2.0/24 dev eth0 table mytable\n"
             "ip rule add from all to 1.1.2.1/32 priority 100\n"
             "ip rule add from 10.205.7.0/24 to all table mytable priority 101\n"
         ),
@@ -124,7 +124,7 @@ JSON_CONFIGS = [
             "# This file is managed by Juju.\n"
             "ip rule del from 10.205.7.0/24 to all table mytable priority 101\n"
             "ip rule del from all to 1.1.2.1/32 priority 100\n"
-            "ip route del 1.1.2.0/24 dev ens3 table mytable\n"
+            "ip route del 1.1.2.0/24 dev eth0 table mytable\n"
             "ip route flush table mytable\n"
             "ip rule del table mytable\n"
             "ip route flush cache\n"
@@ -158,7 +158,7 @@ JSON_CONFIGS = [
     {
         "input": [
             {"type": "table", "table": "mytable"},
-            {"type": "route", "net": "1.1.2.0/24", "device": "ens3"},
+            {"type": "route", "net": "1.1.2.0/24", "device": "eth0"},
             {
                 "type": "rule",
                 "from-net": "all",
@@ -178,7 +178,7 @@ JSON_CONFIGS = [
             "# This file is managed by Juju.\n"
             "ip route flush cache\n"
             "# Table: name mytable\n"
-            "ip route replace 1.1.2.0/24 dev ens3\n"
+            "ip route replace 1.1.2.0/24 dev eth0\n"
             "ip rule add from all to 1.1.2.1/32 priority 100\n"
             "ip rule add from 10.205.7.0/24 to all table mytable priority 101\n"
         ),
@@ -187,7 +187,7 @@ JSON_CONFIGS = [
             "# This file is managed by Juju.\n"
             "ip rule del from 10.205.7.0/24 to all table mytable priority 101\n"
             "ip rule del from all to 1.1.2.1/32 priority 100\n"
-            "ip route del 1.1.2.0/24 dev ens3\n"
+            "ip route del 1.1.2.0/24 dev eth0\n"
             "ip route flush table mytable\n"
             "ip rule del table mytable\n"
             "ip route flush cache\n"
