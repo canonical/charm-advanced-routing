@@ -3,6 +3,7 @@
 import asyncio
 import json
 import os
+import pathlib
 
 import cfg_opts
 
@@ -15,8 +16,8 @@ SERIES = [
     "jammy",
     "focal",
 ]
-CHARM_BUILD_DIR = os.getenv("CHARM_BUILD_DIR", "/tmp/charm-builds")
-BUILT_CHARM = os.path.join(CHARM_BUILD_DIR, "advanced-routing")
+CHARM_LOCATION = os.getenv("CHARM_LOCATION", pathlib.Path(__file__).parent.resolve())
+BUILT_CHARM = os.path.join(CHARM_LOCATION, "advanced-routing.charm")
 
 ############
 # FIXTURES #
