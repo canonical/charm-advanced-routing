@@ -2,7 +2,9 @@ name: Release to Edge
 
 on:
   push:
-    branches: [main]
+    branches: [ main ]
+  release:
+    types: [ published ]
 
 jobs:
   check:
