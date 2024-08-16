@@ -21,7 +21,6 @@ help:
 	@echo " make submodules - make sure that the submodules are up-to-date"
 	@echo " make submodules-update - update submodules to latest changes on remote branch"
 	@echo " make build - build the charm"
-	@echo " make release - run clean, submodules, and build targets"
 	@echo " make lint - run flake8 and black --check"
 	@echo " make black - run black and reformat files"
 	@echo " make unittests - run the tests defined in the unittest subdirectory"
@@ -49,28 +48,24 @@ build: clean
 	@charmcraft -v pack ${BUILD_ARGS}
 	@bash -c ./rename.sh
 
-release: clean build
-	@echo "Charm is built at ${PROJECTPATH}/${CHARM_NAME}.charm"
-	@charmcraft upload ${PROJECTPATH}/${CHARM_NAME}.charm --release edge
-
 lint:
 	@echo "Running lint checks"
-	@cd src && tox -e lint
+	@tox -e lint
 
 black:
 	@echo "Reformat files with black"
-	@cd src && tox -e black
+	@tox -e black
 
 unittests:
 	@echo "Running unit tests"
-	@cd src && tox -e unit
+	@tox -e unit
 
 functional: build
 	@echo "Executing functional tests with ${PROJECTPATH}/${CHARM_NAME}.charm"
-	@cd src && CHARM_LOCATION=${PROJECTPATH} tox -e func
+	@CHARM_LOCATION=${PROJECTPATH} tox -e func
 
 test: lint unittests functional
 	@echo "Tests completed for charm ${CHARM_NAME}."
 
 # The targets below don't depend on a file
-.PHONY: help submodules submodules-update clean build release lint black unittests functional test
+.PHONY: help submodules submodules-update clean build lint black unittests functional test
