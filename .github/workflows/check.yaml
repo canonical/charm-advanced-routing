@@ -1,11 +1,11 @@
-name: Check workflow running linter, unit and functional tests
+name: Tests
 
 on:
   workflow_call:
   workflow_dispatch:
   pull_request:
     types: [opened, synchronize, reopened]
-    branches: [master, main]
+    branches: [main]
     paths-ignore:
       - "**.md"
       - "**.rst"
@@ -23,20 +23,34 @@ jobs:
         python-version: ["3.8", "3.10"]
     with:
       python-version: ${{ matrix.python-version }}
-      working-directory: ./src
 
   func:
-    uses: canonical/bootstack-actions/.github/workflows/func.yaml@v2
     needs: lint-unit
-    strategy:
-      fail-fast: false
-      matrix:
-        command: ['make functional']
-        juju-channel: ['3.4/stable']
-    with:
-      command: ${{ matrix.command }}
-      juju-channel: ${{ matrix.juju-channel }}
-      nested-containers: false
-      provider: "lxd"
-      python-version: "3.10"
-      timeout-minutes: 120
+    name: functional tests
+    runs-on: [ubuntu-latest]
+    timeout-minutes: 120
+    steps:
+
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Setup Juju environment
+        uses: charmed-kubernetes/actions-operator@main
+        with:
+          provider: "lxd"
+          juju-channel: "3.4/stable"
+          charmcraft-channel: "2.x/stable"
+
+      - name: Show juju information
+        run: |
+          juju version
+          juju controllers | grep Version -A 1 | awk '{print $9}'
+
+      - name: Run tests
+        run: "make functional"
