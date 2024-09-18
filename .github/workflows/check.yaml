@@ -116,6 +116,9 @@ jobs:
             echo "TEST_MODEL_CONSTRAINTS=arch=arm64" >> "$GITHUB_ENV"
           fi
 
+      - name: Build the charm
+        run: charmcraft -v pack
+
       - name: Run tests
         run: |
           export CHARM_PATH_JAMMY="$(pwd)/$(ls | grep '.*22.04.*\.charm$')"
