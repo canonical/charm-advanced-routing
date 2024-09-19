@@ -3,7 +3,6 @@
 import asyncio
 import json
 import os
-import pathlib
 
 import cfg_opts
 
