@@ -85,9 +85,7 @@ class RoutingConfigValidator:
 
     def verify_table(self, conf):
         """Verify tables."""
-        hookenv.log(
-            "Verifying table {}".format(pprint.pformat(conf)), level=hookenv.INFO
-        )
+        hookenv.log("Verifying table {}".format(pprint.pformat(conf)), level=hookenv.INFO)
 
         is_valid_name = self.pattern.match(conf["table"])
         if is_valid_name and conf["table"] not in self.tables:
@@ -105,9 +103,7 @@ class RoutingConfigValidator:
 
     def verify_route(self, conf):
         """Verify routes."""
-        hookenv.log(
-            "Verifying route {}".format(pprint.pformat(conf)), level=hookenv.INFO
-        )
+        hookenv.log("Verifying route {}".format(pprint.pformat(conf)), level=hookenv.INFO)
 
         # Verify items in configuration
         self.verify_route_gateway(conf)
@@ -166,9 +162,7 @@ class RoutingConfigValidator:
                     conf["table"], TABLE_NAME_PATTERN, conf
                 )
             else:
-                msg = "Bad network config: table {} reference not defined".format(
-                    conf["table"]
-                )
+                msg = "Bad network config: table {} reference not defined".format(conf["table"])
             self.report_error(msg)
         except KeyError:
             # key is optional
@@ -187,14 +181,9 @@ class RoutingConfigValidator:
                 return
 
             if not is_valid_bool_value:
-                msg = "Bad network config: default_route should be bool in {}".format(
-                    conf
-                )
+                msg = "Bad network config: default_route should be bool in {}".format(conf)
             elif not table_exists:
-                msg = (
-                    "Bad network config: Key 'table' missing in "
-                    "default route {}".format(conf)
-                )
+                msg = "Bad network config: Key 'table' missing in " "default route {}".format(conf)
             else:
                 msg = (
                     "Bad network config: Key 'table' cannot be 'main' in "
@@ -236,9 +225,7 @@ class RoutingConfigValidator:
 
     def verify_rule(self, conf):
         """Verify rules."""
-        hookenv.log(
-            "Verifying rule {}".format(pprint.pformat(conf)), level=hookenv.INFO
-        )
+        hookenv.log("Verifying rule {}".format(pprint.pformat(conf)), level=hookenv.INFO)
 
         # Verify items in configuration
         self.verify_rule_mark(conf)
@@ -335,9 +322,7 @@ class RoutingConfigValidator:
             # key is optional
             pass
         except ValueError:
-            msg = "Bad network config: priority expected to be integer at {}".format(
-                conf
-            )
+            msg = "Bad network config: priority expected to be integer at {}".format(conf)
             self.report_error(msg)
 
     def report_error(self, msg):

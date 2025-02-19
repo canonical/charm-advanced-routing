@@ -33,9 +33,7 @@ class RoutingEntryType(metaclass=ABCMeta):
         try:
             if pipe:
                 hookenv.log(
-                    "Subprocess check shell: {} {}".format(
-                        self.__class__.__name__, cmd
-                    ),
+                    "Subprocess check shell: {} {}".format(self.__class__.__name__, cmd),
                     level=hookenv.INFO,
                 )
                 command = " ".join(cmd)
@@ -159,9 +157,7 @@ class RoutingEntryTable(RoutingEntryType):
         if table in self.builtin_tables:
             hookenv.log("Skip removeline for builtin table {table}".format(table=table))
             return "# Skip removing builtin table {table}\n".format(table=table)
-        return ("ip route flush table {table}\nip rule del table {table}\n").format(
-            table=table
-        )
+        return ("ip route flush table {table}\nip rule del table {table}\n").format(table=table)
 
 
 class RoutingEntryRoute(RoutingEntryType):
@@ -259,11 +255,7 @@ class RoutingEntryRule(RoutingEntryType):
         if not match:
             return None
         hex_vals = match.groups()
-        as_ints = [
-            int(val, 16 if val.lower().startswith("0x") else 10)
-            for val in hex_vals
-            if val
-        ]
+        as_ints = [int(val, 16 if val.lower().startswith("0x") else 10) for val in hex_vals if val]
         return "/".join(map(hex, as_ints))
 
     def __init__(self, config):
@@ -346,9 +338,7 @@ class RoutingEntryRule(RoutingEntryType):
         matchparams.extend(("lookup", self.config.get("table", "main")))
         matchline = " ".join(matchparams)
         prio = str(self.config.get("priority", ""))
-        existing_rules = (
-            subprocess.check_output(["ip", "rule"]).decode("utf8").splitlines()
-        )
+        existing_rules = subprocess.check_output(["ip", "rule"]).decode("utf8").splitlines()
         for rule in existing_rules:
             rule = rule.strip()
             if rule.startswith(prio) and rule.endswith(matchline):

@@ -54,9 +54,7 @@ import routing_entry
         ),
     ],
 )
-def test_routing_entry_rule_is_duplicate(
-    config, check_output, expected_result, monkeypatch
-):
+def test_routing_entry_rule_is_duplicate(config, check_output, expected_result, monkeypatch):
     """Test that RoutingEntryRule.is_duplicate returns the expected boolean value."""
     monkeypatch.setattr("routing_entry.hookenv.log", lambda msg, level: None)
     monkeypatch.setattr("subprocess.check_output", lambda L: check_output)

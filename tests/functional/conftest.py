@@ -148,9 +148,7 @@ async def reconfigure_app(get_app, model):
 
     async def _reconfigure_app(cfg, target):
         application = (
-            target
-            if type(target) is juju.application.Application
-            else await get_app(target)
+            target if type(target) is juju.application.Application else await get_app(target)
         )
         await application.set_config(cfg)
         await application.get_config()

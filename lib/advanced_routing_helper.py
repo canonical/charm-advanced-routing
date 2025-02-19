@@ -28,19 +28,13 @@ class AdvancedRoutingHelper:
     netplan_up_dir_path = pathlib.Path("/etc/networkd-dispatcher/routable.d")
     policy_routing_service_dir_path = pathlib.Path("/etc/systemd/system")
     table_name_path = pathlib.Path("/etc/iproute2/rt_tables.d/juju-managed.conf")
-    networkd_conf_path = pathlib.Path(
-        "/usr/lib/systemd/networkd.conf.d/95-juju-networkd.conf"
-    )
+    networkd_conf_path = pathlib.Path("/usr/lib/systemd/networkd.conf.d/95-juju-networkd.conf")
 
     def __init__(self):
         """Init function."""
         hookenv.log("Init {}".format(self.__class__.__name__), level=hookenv.INFO)
-        self.common_ifup_path = (
-            self.common_location / "if-up" / self.routing_script_name
-        )
-        self.common_cleanup_path = (
-            self.common_location / "cleanup" / self.routing_script_name
-        )
+        self.common_ifup_path = self.common_location / "if-up" / self.routing_script_name
+        self.common_cleanup_path = self.common_location / "cleanup" / self.routing_script_name
         self.charm_config = hookenv.config()
         self.pre_setup()
 
@@ -64,9 +58,7 @@ class AdvancedRoutingHelper:
 
         # check for service file of charm-policy-routing, and block if its present
         policy_routing_svcname = "charm-pre-install-policy-routing.service"
-        policy_routing_file = (
-            self.policy_routing_service_dir_path / policy_routing_svcname
-        )
+        policy_routing_file = self.policy_routing_service_dir_path / policy_routing_svcname
         if policy_routing_file.exists():
             hookenv.log(
                 "It looks like charm-policy-routing is enabled."
@@ -77,26 +69,20 @@ class AdvancedRoutingHelper:
 
     def post_setup(self):
         """Symlinks the up script from the if.up or routable.d location."""
-        hookenv.log(
-            "Symlinking into distro specific network manager", level=hookenv.INFO
-        )
+        hookenv.log("Symlinking into distro specific network manager", level=hookenv.INFO)
         self.symlink_force(str(self.common_ifup_path), str(self.etc_ifup_path))
 
     def setup(self):
         """Modify the interfaces configurations."""
         # Validate configuration options first
         routing_validator = RoutingConfigValidator()
-        routing_validator.read_configurations(
-            self.charm_config["advanced-routing-config"]
-        )
+        routing_validator.read_configurations(self.charm_config["advanced-routing-config"])
         routing_validator.verify_config()
 
         hookenv.log("Writing {}".format(self.common_ifup_path), level=hookenv.INFO)
         # Modify if-up.d
         with open(str(self.common_ifup_path), "w") as ifup_file:
-            ifup_file.write(
-                "#!/bin/sh\n# This file is managed by Juju.\nip route flush cache\n"
-            )
+            ifup_file.write("#!/bin/sh\n# This file is managed by Juju.\nip route flush cache\n")
             for entry in RoutingEntryType.entries:
                 ifup_file.write(entry.addline)
         os.chmod(str(self.common_ifup_path), 0o755)
