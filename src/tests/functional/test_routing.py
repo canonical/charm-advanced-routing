@@ -64,9 +64,7 @@ async def test_deploy(deploy_app, model):
     await model.block_until(
         lambda: (
             deploy_app.status == status
-            and all(
-                unit.workload_status_message == message for unit in deploy_app.units
-            )
+            and all(unit.workload_status_message == message for unit in deploy_app.units)
         ),
         timeout=1200,
     )
@@ -75,10 +73,7 @@ async def test_deploy(deploy_app, model):
 
 @pytest.mark.parametrize(
     "cfg",
-    [
-        pytest.param(cfg, id="cfg-{}".format(i))
-        for i, cfg in enumerate(cfg_opts.JSON_CONFIGS)
-    ],
+    [pytest.param(cfg, id="cfg-{}".format(i)) for i, cfg in enumerate(cfg_opts.JSON_CONFIGS)],
 )
 async def test_juju_routing(cfg, file_contents, file_exists, deploy_app, model):
     """Test juju routing file contents with config."""
@@ -96,8 +91,7 @@ async def test_juju_routing(cfg, file_contents, file_exists, deploy_app, model):
         lambda: (
             deploy_app.status == status
             and all(
-                unit.agent_status == agent_status
-                and unit.workload_status_message == message
+                unit.agent_status == agent_status and unit.workload_status_message == message
                 for unit in deploy_app.units
             )
         ),
@@ -140,9 +134,7 @@ async def test_juju_routing_disable(file_exists, unit, deploy_app, model):
     await model.block_until(
         lambda: (
             deploy_app.status == status
-            and all(
-                unit.workload_status_message == message for unit in deploy_app.units
-            )
+            and all(unit.workload_status_message == message for unit in deploy_app.units)
         ),
         timeout=300,
     )
