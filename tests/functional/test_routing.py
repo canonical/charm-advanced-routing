@@ -15,7 +15,6 @@ SERIES = [
     "jammy",
     "focal",
 ]
-BUILT_CHARM = os.getenv("CHARM_PATH_JAMMY")
 
 ############
 # FIXTURES #
@@ -26,6 +25,7 @@ BUILT_CHARM = os.getenv("CHARM_PATH_JAMMY")
 async def deploy_app(request, model):
     """Deploy the advanced-routing charm as a subordinate of ubuntu."""
     release = request.param
+    built_charm = os.getenv(f"CHARM_PATH_{release.upper()}")
 
     await model.deploy(
         "ubuntu",
@@ -34,7 +34,7 @@ async def deploy_app(request, model):
         channel="stable",
     )
     advanced_routing = await model.deploy(
-        BUILT_CHARM,
+        built_charm,
         application_name="advanced-routing-{}".format(release),
         series=release,
         num_units=0,
