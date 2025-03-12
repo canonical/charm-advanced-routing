@@ -1,6 +1,4 @@
-# Contributing
-
-## Developing
+# Developing
 
 Fork the [repository](https://code.launchpad.net/charm-advanced-routing), and
 make some changes.
