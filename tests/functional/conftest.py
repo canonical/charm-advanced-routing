@@ -15,10 +15,9 @@ import subprocess
 import uuid
 
 import juju
+import pytest_asyncio
 from juju.controller import Controller
 from juju.errors import JujuError
-
-import pytest_asyncio
 
 
 @pytest_asyncio.fixture(scope="module")

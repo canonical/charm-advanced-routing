@@ -4,7 +4,6 @@ import pathlib
 import shutil
 import unittest.mock as mock
 
-
 import routing_validator
 
 

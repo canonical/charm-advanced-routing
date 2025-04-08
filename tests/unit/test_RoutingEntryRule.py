@@ -1,7 +1,6 @@
 """RoutingEntryRule unit testing module."""
 
 import pytest
-
 import routing_entry
 
 
