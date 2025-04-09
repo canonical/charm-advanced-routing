@@ -3,12 +3,9 @@
 import sys
 
 from advanced_routing_helper import AdvancedRoutingHelper, PolicyRoutingExists
-
 from charms.layer import status
 from charms.reactive import clear_flag, set_flag, when, when_not
-
 from routing_validator import RoutingConfigValidatorError
-
 
 try:
     advanced_routing = AdvancedRoutingHelper()

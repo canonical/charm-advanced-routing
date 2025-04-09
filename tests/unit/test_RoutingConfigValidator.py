@@ -1,7 +1,6 @@
 """routing validator unit testing module."""
 
 import pytest
-
 import routing_validator
 
 
