@@ -2,6 +2,8 @@ type: charm
 parts:
   charm:
     source: .
+    build-environment:
+      - PIP_CONSTRAINT: $CRAFT_PART_BUILD/constraints.txt
     plugin: reactive
     build-snaps: [charm]
     build-packages: [python3-dev]
