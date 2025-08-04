@@ -10,6 +10,7 @@ import pytest_asyncio
 
 pytestmark = pytest.mark.asyncio
 SERIES = [
+    "noble",
     "jammy",
     "focal",
 ]
