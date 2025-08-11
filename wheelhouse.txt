@@ -1,5 +1,8 @@
 # https://github.com/juju-solutions/layer-basic/issues/210
 Jinja2<3.0;python_version == '3.8'
-# https://github.com/pypa/setuptools/issues/4483
-setuptools==70.0.0
+setuptools
 netifaces
+# Required dependency for charmhelpers
+git+https://github.com/juju/charm-helpers.git@master#egg=charmhelpers
+hatchling;python_version == '3.12'
+calver;python_version == '3.12'
