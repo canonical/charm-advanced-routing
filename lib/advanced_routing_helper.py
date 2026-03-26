@@ -6,7 +6,7 @@ import pathlib
 import subprocess
 
 from charmhelpers.core import hookenv
-from charmhelpers.core.host import CompareHostReleases, lsb_release
+from charmhelpers.core.host import CompareHostReleases, lsb_release, service_restart
 
 from routing_entry import RoutingEntryType
 
@@ -71,6 +71,16 @@ class AdvancedRoutingHelper:
         """Symlinks the up script from the if.up or routable.d location."""
         hookenv.log("Symlinking into distro specific network manager", level=hookenv.INFO)
         self.symlink_force(str(self.common_ifup_path), str(self.etc_ifup_path))
+
+        # (dparv) issue_91: After noble the networkd-dispatcher service has two conditions
+        # ConditionPathExistsGlob=|/etc/networkd-dispatcher/*/*
+        # ConditionPathExistsGlob=|/usr/lib/networkd-dispatcher/*/*
+        # if those are not met, the service won't start, therefore we need to
+        # restart it manually after rendering the config
+        release = lsb_release()["DISTRIB_CODENAME"].lower()
+        if CompareHostReleases(release) >= "noble":
+            hookenv.log("Restarting networkd-dispatcher.service", level=hookenv.INFO)
+            service_restart("networkd-dispatcher.service")
 
     def setup(self):
         """Modify the interfaces configurations."""
