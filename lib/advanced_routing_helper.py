@@ -76,7 +76,7 @@ class AdvancedRoutingHelper:
         # ConditionPathExistsGlob=|/etc/networkd-dispatcher/*/*
         # ConditionPathExistsGlob=|/usr/lib/networkd-dispatcher/*/*
         # if those are not met, the service won't start, therefore we need to
-        # restart it manually after rendering the config
+        # restart it manually after rendering the config 
         release = lsb_release()["DISTRIB_CODENAME"].lower()
         if CompareHostReleases(release) >= "noble":
             hookenv.log("Restarting networkd-dispatcher.service", level=hookenv.INFO)
