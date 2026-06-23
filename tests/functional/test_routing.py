@@ -13,6 +13,7 @@ SERIES = [
     "noble",
     "jammy",
     "focal",
+    "resolute",
 ]
 
 ############
