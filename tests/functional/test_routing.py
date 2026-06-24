@@ -17,6 +17,7 @@ SERIES = [
 
 # Juju 3.x uses bases instead of series names.
 SERIES_TO_BASE = {
+    "resolute": "ubuntu@26.04",
     "noble": "ubuntu@24.04",
     "jammy": "ubuntu@22.04",
     "focal": "ubuntu@20.04",
