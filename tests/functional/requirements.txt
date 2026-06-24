@@ -1,9 +1,4 @@
-flake8
-juju
+jubilant
 mock
 pytest
-# Breaking change after 0.23, asyncio_event_loop was been removed.
-# Instead of spending time to fix functional test for version after 0.23,
-# We should spend time to follow up with pytest-operator or zaza.
-pytest-asyncio<0.23
 requests

@@ -1,14 +1,13 @@
 """Main module for functional testing."""
 
-import asyncio
 import json
 import os
+import time
 
 import cfg_opts
+import jubilant
 import pytest
-import pytest_asyncio
 
-pytestmark = pytest.mark.asyncio
 SERIES = [
     "noble",
     "jammy",
@@ -16,41 +15,58 @@ SERIES = [
     "resolute",
 ]
 
+# Juju 3.x uses bases instead of series names.
+SERIES_TO_BASE = {
+    "noble": "ubuntu@24.04",
+    "jammy": "ubuntu@22.04",
+    "focal": "ubuntu@20.04",
+}
+
 ############
 # FIXTURES #
 ############
 
 
-@pytest_asyncio.fixture(scope="module", params=SERIES)
-async def deploy_app(request, model):
-    """Deploy the advanced-routing charm as a subordinate of ubuntu."""
-    release = request.param
-    built_charm = os.getenv(f"CHARM_PATH_{release.upper()}")
+@pytest.fixture(scope="module", params=SERIES)
+def deploy_app(request, juju):
+    """Deploy the advanced-routing charm as a subordinate of ubuntu.
 
-    await model.deploy(
+    Yields the application name of the deployed advanced-routing charm as a string.
+    """
+    release = request.param
+    base = SERIES_TO_BASE[release]
+    built_charm = os.getenv("CHARM_PATH_{}".format(release.upper()))
+    ubuntu_app = "ubuntu-{}".format(release)
+    routing_app = "advanced-routing-{}".format(release)
+
+    juju.deploy(
         "ubuntu",
-        application_name="ubuntu-{}".format(release),
-        series=release,
+        ubuntu_app,
+        base=base,
         channel="stable",
     )
-    advanced_routing = await model.deploy(
+    juju.deploy(
         built_charm,
-        application_name="advanced-routing-{}".format(release),
-        series=release,
-        num_units=0,
+        routing_app,
+        base=base,
     )
-    await model.add_relation(
-        "ubuntu-{}".format(release),
-        "advanced-routing-{}".format(release),
-    )
+    juju.integrate(ubuntu_app, routing_app)
 
-    yield advanced_routing
+    yield routing_app
 
 
-@pytest_asyncio.fixture(scope="module")
-async def unit(deploy_app):
-    """Return the advanced-routing unit we've deployed."""
-    return deploy_app.units.pop()
+@pytest.fixture(scope="module")
+def unit(juju, deploy_app):
+    """Return the advanced-routing unit name for the deployed app.
+
+    The unit name is resolved once from the live model status after the app has
+    been deployed.  Using a stable string avoids the fragile ``.pop()`` pattern
+    of the old python-libjuju tests, which could exhaust the unit list across
+    parametrized test calls.
+    """
+    status = juju.status()
+    units = status.get_units(deploy_app)
+    return next(iter(units))
 
 
 #########
@@ -58,89 +74,88 @@ async def unit(deploy_app):
 #########
 
 
-async def test_deploy(deploy_app, model):
-    """Test the deployment."""
-    status, message = "blocked", "Advanced routing is disabled"
-    await model.block_until(
-        lambda: (
-            deploy_app.status == status
-            and all(unit.workload_status_message == message for unit in deploy_app.units)
+def test_deploy(deploy_app, juju):
+    """Test the deployment reaches the expected blocked state."""
+    juju.wait(
+        lambda status: (
+            status.apps.get(deploy_app) is not None
+            and status.apps[deploy_app].is_blocked
+            and all(
+                u.workload_status.message == "Advanced routing is disabled"
+                for u in status.get_units(deploy_app).values()
+            )
         ),
         timeout=1200,
     )
-    assert True
 
 
 @pytest.mark.parametrize(
     "cfg",
     [pytest.param(cfg, id="cfg-{}".format(i)) for i, cfg in enumerate(cfg_opts.JSON_CONFIGS)],
 )
-async def test_juju_routing(cfg, file_contents, file_exists, deploy_app, model):
+def test_juju_routing(cfg, file_contents, file_exists, deploy_app, unit, juju):
     """Test juju routing file contents with config."""
     json_config = cfg["input"]
-    await deploy_app.set_config(
+    juju.config(
+        deploy_app,
         {
             "advanced-routing-config": json.dumps(json_config),
             "enable-advanced-routing": "true",
             "action-managed-update": "false",
-        }
+        },
     )
 
-    status, agent_status, message = "active", "idle", "Unit is ready"
-    await model.block_until(
-        lambda: (
-            deploy_app.status == status
+    juju.wait(
+        lambda status: (
+            status.apps.get(deploy_app) is not None
+            and status.apps[deploy_app].is_active
             and all(
-                unit.agent_status == agent_status and unit.workload_status_message == message
-                for unit in deploy_app.units
+                u.juju_status.current == "idle" and u.workload_status.message == "Unit is ready"
+                for u in status.get_units(deploy_app).values()
             )
         ),
         timeout=300,
     )
 
     # NOTE(gabrielcocenza) files might take more time to be rendered.
-    await asyncio.sleep(10)
+    time.sleep(10)
 
     common_path = "/usr/local/lib/juju-charm-advanced-routing"
     up_path = "{}/if-up/95-juju_routing".format(common_path)
     cleanup_path = "{}/cleanup/95-juju_routing".format(common_path)
-    unit = deploy_app.units.pop()
 
-    if_up_content = await file_contents(path=up_path, target=unit)
-    if_down_content = await file_contents(path=cleanup_path, target=unit)
+    if_up_content = file_contents(up_path, unit)
+    if_down_content = file_contents(cleanup_path, unit)
 
-    if_up_expected_content = cfg["expected_ifup"]
-    if_down_expected_content = cfg["expected_ifdown"]
+    assert cfg["expected_ifup"] == if_up_content
+    assert cfg["expected_ifdown"] == if_down_content
 
-    assert if_up_expected_content == if_up_content
-    assert if_down_expected_content == if_down_content
-
-    series = deploy_app.name.split("-")[-1]
+    series = deploy_app.split("-")[-1]
     if series >= "xenial" or series < "bionic":
         ifup_path = "/etc/network/if-up.d"
     else:
         ifup_path = "/etc/networkd-dispatcher/routable.d"
 
     ifup_expected_file_path = "{}/95-juju_routing".format(ifup_path)
-    ifup_exists = await file_exists(path=ifup_expected_file_path, target=unit)
-    assert ifup_exists == "1\n"
+    assert file_exists(ifup_expected_file_path, unit) == "1\n"
 
 
-async def test_juju_routing_disable(file_exists, unit, deploy_app, model):
-    """Test juju routing file non-existance when conf disabled."""
-    status, message = "blocked", "Advanced routing is disabled"
-
-    await deploy_app.set_config({"enable-advanced-routing": "false"})
-    await model.block_until(
-        lambda: (
-            deploy_app.status == status
-            and all(unit.workload_status_message == message for unit in deploy_app.units)
+def test_juju_routing_disable(file_exists, unit, deploy_app, juju):
+    """Test juju routing file non-existence when conf disabled."""
+    juju.config(deploy_app, {"enable-advanced-routing": "false"})
+    juju.wait(
+        lambda status: (
+            status.apps.get(deploy_app) is not None
+            and status.apps[deploy_app].is_blocked
+            and all(
+                u.workload_status.message == "Advanced routing is disabled"
+                for u in status.get_units(deploy_app).values()
+            )
         ),
         timeout=300,
     )
 
-    series = deploy_app.name.split("-")[-1]
-
+    series = deploy_app.split("-")[-1]
     if series >= "xenial" or series < "bionic":
         ifup_path = "/etc/network/if-up.d"
         ifdown_path = "/etc/network/if-down.d"
@@ -150,39 +165,33 @@ async def test_juju_routing_disable(file_exists, unit, deploy_app, model):
 
     for if_path in [ifup_path, ifdown_path]:
         filename = "{}/95-juju_routing".format(if_path)
-        if_exists = await file_exists(path=filename, target=unit)
-        assert if_exists == "0\n"
+        assert file_exists(filename, unit) == "0\n"
 
 
-async def test_apply_changes_disabled(file_exists, deploy_app, unit):
-    """Tests that apply-changes action complete."""
-    await deploy_app.set_config(
-        {"enable-advanced-routing": "false", "action-managed-update": "true"}
+def test_apply_changes_disabled(deploy_app, unit, juju):
+    """Test that the apply-changes action fails when advanced routing is disabled."""
+    juju.config(
+        deploy_app,
+        {"enable-advanced-routing": "false", "action-managed-update": "true"},
     )
-    action = await unit.run_action("apply-changes")
-    action = await action.wait()
-    assert action.status == "failed"
+    with pytest.raises(jubilant.TaskError):
+        juju.run(unit, "apply-changes")
 
 
-async def test_apply_changes(file_exists, deploy_app, unit):
-    """Tests that apply-changes action complete."""
+def test_apply_changes(file_exists, deploy_app, unit, juju):
+    """Test that the apply-changes action completes when advanced routing is enabled."""
     ifup_path = "/etc/networkd-dispatcher/routable.d"
     ifup_filename = "{}/95-juju_routing".format(ifup_path)
-    ifup_exists = await file_exists(path=ifup_filename, target=unit)
 
     # ifup file doesn't exist before running the action
-    assert ifup_exists == "0\n"
+    assert file_exists(ifup_filename, unit) == "0\n"
 
-    await deploy_app.set_config(
-        {"enable-advanced-routing": "true", "action-managed-update": "true"}
+    juju.config(
+        deploy_app,
+        {"enable-advanced-routing": "true", "action-managed-update": "true"},
     )
-
-    unit = deploy_app.units[0]
-    action = await unit.run_action("apply-changes")
-    action = await action.wait()
-    assert action.status == "completed"
-
-    ifup_exists = await file_exists(path=ifup_filename, target=unit)
+    juju.run(unit, "apply-changes")
+    # TaskError would have been raised on failure; reaching here means the action completed.
 
     # ifup file exists after running the action
-    assert ifup_exists == "1\n"
+    assert file_exists(ifup_filename, unit) == "1\n"
