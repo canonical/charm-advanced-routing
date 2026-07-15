@@ -115,7 +115,7 @@ jobs:
 
       - uses: canonical/craft-actions/charmcraft/setup@main
         with:
-          channel: "latest/edge"
+          channel: "latest/stable"
 
       - name: Pack the charms
         id: build
@@ -168,7 +168,7 @@ jobs:
         with:
           provider: "lxd"
           juju-channel: ${{ matrix.juju-channel }}
-          charmcraft-channel: "latest/edge"
+          charmcraft-channel: "latest/stable"
 
       - name: Determine system architecture
         run: echo "SYSTEM_ARCH=$(uname -m)" >> $GITHUB_ENV

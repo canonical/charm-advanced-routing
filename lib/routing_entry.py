@@ -12,6 +12,7 @@ concrete implementations, that model a routing table
 import collections
 import re
 import subprocess
+from pathlib import Path
 from abc import ABCMeta, abstractmethod, abstractproperty
 
 
@@ -117,6 +118,10 @@ class RoutingEntryTable(RoutingEntryType):
         """Add unique tables to the tables list."""
         hookenv.log("Created {}".format(self.__class__.__name__), level=hookenv.INFO)
         super().__init__()
+
+        # initialize the directory for the table_name_file
+        Path(RoutingEntryTable.table_name_file).parent.mkdir(parents=True, exist_ok=True)
+
         self.config = config
         RoutingEntryTable.tables_all.update(self.builtin_tables)
 

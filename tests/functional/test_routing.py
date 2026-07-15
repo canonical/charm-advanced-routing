@@ -9,10 +9,10 @@ import jubilant
 import pytest
 
 SERIES = [
+    "resolute",
     "noble",
     "jammy",
     "focal",
-    "resolute",
 ]
 
 # Juju 3.x uses bases instead of series names.
