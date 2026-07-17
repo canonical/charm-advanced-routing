@@ -2,7 +2,11 @@
 Jinja2<3.0;python_version == '3.8'
 setuptools
 netifaces
-# Required dependency for charmhelpers
-git+https://github.com/juju/charm-helpers.git@master#egg=charmhelpers
-hatchling;python_version == '3.12'
-calver;python_version == '3.12'
+
+# https://github.com/juju/charm-tools/pull/696
+Cython>=3.1,<4;python_version >= '3.12'
+Cython<3.1;python_version < '3.12'
+
+git+https://github.com/juju/charm-helpers.git@99980625aa2ad176dfb7e54dd53d2a13acbacc02#egg=charmhelpers
+hatchling;python_version >= '3.12'
+calver;python_version >= '3.12'
